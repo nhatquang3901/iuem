@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Iu em</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    p {
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      position: relative;
+      height: 80px;
+    }
+
+    button {
+      padding: 12px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    #yes {
+      background: #4CAF50;
+      color: white;
+      margin-right: 50%;
+      width: 45%;
+      text-align: center;
+      /* left: 160px; */
+    }
+
+    #no {
+      background: #f44336;
+      color: white;
+      position: absolute;
+      left: 160px;
+      margin-left: 18%;
+      top: 0;
+    }
+
+
+    .firework {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: explode 1s ease-out forwards;
+    }
+
+    @keyframes explode {
+      from {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+
+      to {
+        transform: translate(var(--x), var(--y)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    .hall {
+      border-radius: 4%;
+      position: fixed;
+      width: 80%;
+      height: 80%;
+      margin: auto;
+      text-align: center;
+      inset: 0;
+      background: radial-gradient(circle at center, #fff 0%, #ffe0e9 60%, #ffb6c1 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 48px;
+      color: #d6336c;
+      animation: fadeIn 1.5s ease forwards;
+      z-index: 10;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Tooltip troll */
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      z-index: 100;
+    }
+
+    .tooltip.show {
+      opacity: 1;
+      transform: translateY(-20px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <p>Cục cưng vào lễ đường cùng tớ nhá không? 💍</p>
+    <div class="buttons">
+      <button id="yes">Dạ, mình đi thuii</button>
+      <button id="no">Không thèm </button>
+    </div>
+  </div>
+
+  <script>
+    const noBtn = document.getElementById('no');
+    const yesBtn = document.getElementById('yes');
+    const container = document.querySelector('.container');
+
+    let escapeCount = 0;
+
+    /* ===== ÂM THANH ===== */
+    const whoosh = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-fast-small-sweep-transition-166.mp3");
+
+    /* ===== TOOLTIP ===== */
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.innerText = 'thui mà vợ iuuu';
+    document.body.appendChild(tooltip);
+
+    function showTooltip(x, y) {
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+      tooltip.classList.add('show');
+      setTimeout(() => tooltip.classList.remove('show'), 600);
+    }
+
+    function moveNoButton() {
+      escapeCount++;
+
+      const rect = container.getBoundingClientRect();
+      const maxX = rect.width - noBtn.offsetWidth;
+      const maxY = rect.height - noBtn.offsetHeight;
+
+      const speedBoost = Math.min(escapeCount * 15, 150);
+
+      const x = Math.random() * Math.max(0, maxX);
+      const y = Math.random() * Math.max(0, maxY);
+
+      noBtn.style.transition = `all ${Math.max(0.05, 0.25 - escapeCount * 0.02)}s linear`;
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+
+      /* Âm thanh */
+      whoosh.currentTime = 0;
+      whoosh.play().catch(() => { });
+
+      /* Rung điện thoại */
+      if (navigator.vibrate) {
+        navigator.vibrate(40);
+      }
+    }
+
+    /* ===== DESKTOP ===== */
+    noBtn.addEventListener('mouseenter', moveNoButton);
+
+    /* ===== MOBILE ===== */
+    noBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      moveNoButton();
+    });
+
+    container.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      const btnRect = noBtn.getBoundingClientRect();
+
+      const dx = touch.clientX - (btnRect.left + btnRect.width / 2);
+      const dy = touch.clientY - (btnRect.top + btnRect.height / 2);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 100) {
+        showTooltip(touch.clientX + 10, touch.clientY - 10);
+        moveNoButton();
+      }
+    });
+
+    /* ===== PHÁO HOA ===== */
+    function createFirework(x, y) {
+      for (let i = 0; i < 30; i++) {
+        const fw = document.createElement('div');
+        fw.className = 'firework';
+        fw.style.left = x + 'px';
+        fw.style.top = y + 'px';
+        fw.style.background = `hsl(${Math.random() * 360},100%,60%)`;
+        fw.style.setProperty('--x', (Math.random() * 200 - 100) + 'px');
+        fw.style.setProperty('--y', (Math.random() * 200 - 100) + 'px');
+        document.body.appendChild(fw);
+        setTimeout(() => fw.remove(), 1000);
+      }
+    }
+
+    /* ===== BẤM CÓ ===== */
+    yesBtn.addEventListener('click', () => {
+      const rect = yesBtn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => createFirework(x, y), i * 200);
+      }
+
+      setTimeout(() => {
+        const hall = document.createElement('div');
+        hall.className = 'hall';
+        hall.innerHTML = 'Tớ biết vợ sẽ đồng ý màaa hihi 💒<br>Chúng ta vào lễ đường thôi! 💖';
+        document.body.appendChild(hall);
+      }, 1200);
+    });
+  </script>
+
+
+
+</body>
+
+</html>
